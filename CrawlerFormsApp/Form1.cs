@@ -21,11 +21,11 @@ namespace CrawlerFormsApp
 
         //tring HomePage = "https://www.adayroi.com/";
 
-        // string HomePage = "https://tiki.vn/";
+       // string HomePage = "https://tiki.vn/";
 
         //string HomePage = "https://vinabook.com/";
 
-        string HomePage = "https://www.fahasa.com";
+        string HomePage = "https://www.fahasa.com/";
 
         HttpClient httpClient;
         HttpClientHandler handler;
@@ -466,7 +466,69 @@ namespace CrawlerFormsApp
 
             foreach (var item in LinkList)
             {
-                
+                // Link :href=(.*?)>
+
+                string Link = Regex.Match(item.ToString(), @"href=(.*?)>", RegexOptions.Singleline).Value;
+                Link = Link.Replace("href=", "");
+                Link = Link.Replace(@"""", "");
+                Link = Link.Replace(@">", "");
+
+                string htmlProduct = CrawlDataFromURL(Link);
+
+                //Name: <h1 class="mainbox-title" itemprop="name">(.*?)</h1>
+                string Name = Regex.Match(htmlProduct.ToString(), @"<h1 class=""mainbox-title"" itemprop=""name"">(.*?)</h1>").Value;
+                Name = Name.Replace(@"<h1 class=""mainbox-title"" itemprop=""name"">", "");
+                Name = Name.Replace(@"</h1>", "");
+
+                // image :<div class=""bk-front"">(.*?)</div>
+                string image = Regex.Match(htmlProduct.ToString(), @"<div class=""bk-front"">(.*?)</div>", RegexOptions.Singleline).Value;
+                // ImageLink: src=(.*?)alt
+                string ImageLink = Regex.Match(image.ToString(), @"src=(.*?)alt", RegexOptions.Singleline).Value;
+                ImageLink = ImageLink.Replace(@"src=", "");
+                ImageLink = ImageLink.Replace(@"""", "");
+                ImageLink = ImageLink.Replace(@"alt", "");
+
+                //SKU: <div id="product_detail_recommend_by_category" data-product_id=
+                string SKU = Regex.Match(htmlProduct.ToString(), @"<div id=""product_detail_recommend_by_category"" data-product_id=(.*?)>", RegexOptions.Singleline).Value;
+                SKU = SKU.Replace(@"<div id=""product_detail_recommend_by_category"" data-product_id=", "");
+                SKU = SKU.Replace(@"""", "");
+                SKU = SKU.Replace(@">", "");
+                SKU = SKU.Trim();
+
+
+                //short description: <table id="chi-tiet" (.*?)</table>
+
+                string ShortDescription = Regex.Match(htmlProduct.ToString(), @"itemprop=""description"">(.*?)<a", RegexOptions.Singleline).Value;
+                ShortDescription = ShortDescription.Replace(@"itemprop=""description"">", "");
+                ShortDescription = ShortDescription.Replace(@"""", "");
+                ShortDescription = ShortDescription.Replace(@"<a", "");
+                //description:<h3 class="mainbox2-title clearfix margin-top-20">(.*?)<div class="mainbox2-bottom">
+                string Description1 = Regex.Match(htmlProduct.ToString(), @"<h3 class=""mainbox2-title clearfix margin-top-20"">(.*?)<div class=""mainbox2-bottom"">", RegexOptions.Singleline).Value;
+                Description1 = Description1.Replace(@"<div class=""mainbox2-bottom"">", "");
+
+                string Description2 = Regex.Match(htmlProduct.ToString(), @"<div id=""product-details-box""(.*?)<div class=""product_recommend-box product-details-box  other-people-buy-this"">", RegexOptions.Singleline).Value;
+                Description2 = Description2.Replace(@"<div class=""product_recommend-box product-details-box  other-people-buy-this"">", "");
+                string Description = Description1 + Description2;
+                //regular price: misc1:(.*?)//
+                string RegularPrice = Regex.Match(htmlProduct.ToString(), @"misc1:(.*?)//", RegexOptions.Singleline).Value;
+                RegularPrice = RegularPrice.Replace(@"misc1:", "");
+                RegularPrice = RegularPrice.Replace(@"""", "");
+                RegularPrice = RegularPrice.Replace(@",", "");
+                RegularPrice = RegularPrice.Replace(@"//", "").Trim();
+
+                //sale price:value: (.*?), currency
+                string SalePrice = Regex.Match(htmlProduct.ToString(), @"value: (.*?), currency", RegexOptions.Singleline).Value;
+                Regex reg = new Regex("[*'\",_&#^@]");
+                SalePrice = reg.Replace(SalePrice, string.Empty);
+
+                Regex reg1 = new Regex("[ ]");
+                SalePrice = reg.Replace(SalePrice, "");
+                SalePrice = SalePrice.Replace(@"value:", "");
+                // SalePrice = SalePrice.Replace(@",","");
+                SalePrice = SalePrice.Replace(@"currency", "").Trim();
+                //SalePrice = SalePrice.Replace(@"[^a-zA-Z0-9_.]+", "").Trim();
+
+
 
                 // successfully product
                 string ID = "";
